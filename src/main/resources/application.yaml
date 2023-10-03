@@ -1,0 +1,8 @@
+spring:
+  cloud:
+    openfeign:
+      client:
+        config:
+          weather:
+            url: http://localhost:9090/api/weather
+            connect-timeout: 5000
