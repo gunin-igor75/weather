@@ -5,4 +5,41 @@ spring:
         config:
           weather:
             url: http://localhost:9090/api/weather
-            connect-timeout: 5000
+            # время конекта
+            connect-timeout: 1000
+            # время ожидания ответа
+            read-timeout: 1000
+
+resilience4j:
+  retry:
+    instances:
+      weather-retry:
+        # максимальное количество повторных вызовов
+        max-attempts: 10
+        # Через какой промежуток времени делать вызовы
+        wait-duration: 3s
+        # на какие exception делать повтор
+        retry-exception:
+          - feign.FeignException.BadGateway
+          - feign.FeignException.BadRequest
+          - feign.FeignException.NotFound
+  circuitbreaker:
+    instances:
+      weather-breaker:
+        # количество нерпавильных ответов за определенный промежуток времени
+        # time_based - количество времени не успешных ответов
+        sliding-window-type: count_based
+        # размер ответов которые надо проанализировать
+        sliding-window-size: 5
+        # максимальное допумое знаение при достижении которого будет размыкание контекта(процент)
+        failure-rate-threshold: 75
+        # после какого количества запросов вести отчет
+        minimum- number-of-calls: 5
+        # максимальное время в открытом состоянии(разомкнут)
+        wait-duration-open-state: 10s
+        # максимальное время в полуоткрытом состоянии
+        max-wait-duration-in-half-open-state: 5s
+        # автоматический переход из полуоткрытого состояния в открытое0
+        automatic-transition-from-open-to-half-open-enabled: true
+        # разрешенное количество вызовов на внешний сервис когда circuitbreaker в полуоткрытом состоянии
+        permitted-number-of-calls-in-half-open-state: 2
